@@ -1,0 +1,66 @@
+import numpy as np
+
+import numpy as np
+
+n = 4  
+#Заповнення матриці за правилом: a_ij = (1 + 3i)^(j – 2)
+matrix = np.fromfunction(lambda i, j: (1 + 3 * (i + 1)) ** (j - 2), (n, n), dtype=float)
+print("Квадратна матриця:")
+print(matrix)
+
+det_matrix = np.linalg.det(matrix)
+print(f"\nДетермінант матриці: {det_matrix}")
+
+if det_matrix != 0:
+    inv_matrix = np.linalg.inv(matrix)
+    print("\nОбернена матриця:")
+    print(inv_matrix)
+else:
+    print("\nМатриця є виродженою, тому оберненої матриці не існує.")
+
+#Задання двох векторів: один з дійсними числами, другий з цілими
+m = 3  
+vector_real = np.random.rand(m)  
+vector_int = np.random.randint(1, 10, m) 
+print("\nВектор з дійсними числами:")
+print(vector_real)
+print("\nВектор з цілими числами:")
+print(vector_int)
+
+vector_sum = vector_real + vector_int
+print("\nСума векторів:")
+print(vector_sum)
+
+elementwise_product = vector_real * vector_int
+print("\nПоелементний добуток векторів:")
+print(elementwise_product)
+
+dot_product = np.dot(vector_real, vector_int)
+print("\nСкалярний добуток векторів:")
+print(dot_product)
+
+# c. Задання двох матриць та знаходження їх добутку
+matrix_A = np.random.rand(n, m)
+print("\nМатриця A (n × m):")
+print(matrix_A)
+
+matrix_B = np.random.rand(m, n)
+print("\nМатриця B (m × n):")
+print(matrix_B)
+
+matrix_product = np.dot(matrix_A, matrix_B)
+print("\nДобуток матриць A і B:")
+print(matrix_product)
+
+# d. Добуток матриць і векторів
+matrix_vector_product_1 = np.dot(matrix, vector_real[:n])  
+print("\nДобуток квадратної матриці і вектора з дійсними числами:")
+print(matrix_vector_product_1)
+
+matrix_vector_product_2 = np.dot(matrix_A, vector_int)  
+print("\nДобуток матриці A і вектора з цілими числами:")
+print(matrix_vector_product_2)
+
+vector_matrix_product = np.dot(vector_int, matrix_B)  #Вектор розміром m на матрицю B
+print("\nДобуток вектора з цілими числами і матриці B:")
+print(vector_matrix_product)
