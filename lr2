@@ -1,0 +1,102 @@
+import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+# Крок 1: Генерація та візуалізація даних
+n_samples = 150  # кількість точок
+n_class = 2  # кількість класів
+
+# Генеруємо дані
+X, y = make_blobs(n_samples=n_samples, centers=n_class, cluster_std=0.9, random_state=0)
+
+# Візуалізуємо дані
+plt.figure()
+colors = ["#4AACC8", "#FF99B5"]
+for i, color in enumerate(colors):
+    plt.scatter(X[y == i][:, 0], X[y == i][:, 1], c=color, label=f"Class {i}")
+plt.title("Generated Data")
+plt.xlabel("X1")
+plt.ylabel("X2")
+plt.legend()
+plt.show()
+
+# Розбиваємо на навчальну і тестову вибірки (85% на 15%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+
+# Крок 2: Ініціалізація персептрону
+np.random.seed(42)  # для відтворюваності
+weights = np.random.uniform(-0.5, 0.5, size=X_train.shape[1])
+bias = np.random.uniform(-0.5, 0.5)
+print("Initial Weights:", weights)
+print("Initial Bias:", bias)
+
+# Крок 3: Визначаємо функцію активації (step) та мережу
+def step(x):
+    return 1 if x >= 0 else 0
+
+def perceptron_output(X, weights, bias):
+    # Обчислюємо значення персептрону
+    linear_output = np.dot(X, weights) + bias
+    return step(linear_output)
+
+# Крок 4: Реалізація правила навчання (метод Відроу-Хоффа)
+def train_perceptron(X, y, epochs, lr, weights, bias):
+    errors = []  # для збереження помилки на кожній епосі
+    for epoch in range(epochs):
+        total_error = 0
+        for i in range(len(X)):
+            # Передбачення
+            prediction = perceptron_output(X[i], weights, bias)
+            # Помилка
+            error = y[i] - prediction
+            # Оновлення ваг і зміщення
+            weights += lr * error * X[i]
+            bias += lr * error
+            # Акумулюємо помилку
+            total_error += abs(error)
+        errors.append(total_error)
+        print(f"Epoch {epoch+1}, Total Error: {total_error}")
+        # Зупиняємо навчання, якщо немає помилок
+        if total_error == 0:
+            break
+    return weights, bias, errors
+
+# Навчальні параметри
+epochs = 200
+learning_rate = 0.1
+
+# Навчання персептрону
+trained_weights, trained_bias, errors = train_perceptron(X_train, y_train, epochs, learning_rate, weights, bias)
+print("Trained Weights:", trained_weights)
+print("Trained Bias:", trained_bias)
+
+# Візуалізація кривої втрат
+plt.plot(errors, color='red')
+plt.title("Loss Curve")
+plt.xlabel("Epoch")
+plt.ylabel("Total Error")
+plt.show()
+
+# Крок 5: Тестування моделі
+def predict(X, weights, bias):
+    return np.array([perceptron_output(x, weights, bias) for x in X])
+
+y_pred_train = predict(X_train, trained_weights, trained_bias)
+y_pred_test = predict(X_test, trained_weights, trained_bias)
+
+# Оцінка точності
+def accuracy(y_true, y_pred):
+    return np.mean(y_true == y_pred)
+
+train_accuracy = accuracy(y_train, y_pred_train)
+test_accuracy = accuracy(y_test, y_pred_test)
+print("Training Accuracy:", train_accuracy)
+print("Testing Accuracy:", test_accuracy)
+
+# Підсумковий звіт
+print("Classification Report (Test Set):")
+print(classification_report(y_test, y_pred_test, target_names=["Class 0", "Class 1"]))
