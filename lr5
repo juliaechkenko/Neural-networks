@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.utils import to_categorical
+
+#завантаження датасету та його підготовка
+data = load_wine()
+X, y = data.data, data.target
+
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+
+#перетворення міток у one-hot encoding
+y_train_cat = to_categorical(y_train)
+y_test_cat = to_categorical(y_test)
+ 
+model = Sequential([
+    Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+    Dense(32, activation='relu'),
+    Dense(y_train_cat.shape[1], activation='softmax')  # кількість виходів = кількість класів
+])
+
+#компіляція моделі
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+#навчання моделі
+history = model.fit(X_train, y_train_cat, validation_split=0.2, epochs=50, batch_size=16, verbose=1)
+
+#побудова кривої втрат
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.title('Крива втрат')
+plt.show()
+
+y_pred = model.predict(X_test)
+y_pred_classes = np.argmax(y_pred, axis=1)
+
+classification_rep = classification_report(y_test, y_pred_classes, target_names=data.target_names)
+print("Classification Report:")
+print(classification_rep)
+
+conf_matrix = confusion_matrix(y_test, y_pred_classes)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, cmap='Blues', fmt='d', xticklabels=data.target_names, yticklabels=data.target_names)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
